@@ -20,18 +20,24 @@ import { RestTimer } from "@/components/RestTimer";
 // ---- 定数 ---------------------------------------------------------------
 
 const BODY_PART_TABS = [
-  { id: "chest", label: "胸" },
-  { id: "back", label: "背中" },
-  { id: "legs", label: "脚" },
+  { id: "chest",     label: "胸" },
+  { id: "back",      label: "背中" },
+  { id: "legs",      label: "脚" },
   { id: "shoulders", label: "肩" },
-  { id: "arms", label: "腕" },
-  { id: "core", label: "体幹" },
+  { id: "arms",      label: "腕" },
+  { id: "core",      label: "体幹" },
 ] as const;
 
 type BodyPartTabId = (typeof BODY_PART_TABS)[number]["id"];
 
-/** 回数クイック選択の選択肢 */
-const REP_OPTIONS = [5, 6, 8, 10, 12, 15] as const;
+/** セットの感触オプション */
+const FEELING_OPTIONS = [
+  { value: "アップ",   emoji: "🔄", label: "アップ" },
+  { value: "余裕あり", emoji: "😊", label: "余裕" },
+  { value: "良い感じ", emoji: "💪", label: "良い" },
+  { value: "きつい",   emoji: "🔥", label: "きつい" },
+  { value: "限界",     emoji: "😵", label: "限界" },
+] as const;
 
 // ---- ヘルパー -----------------------------------------------------------
 
@@ -40,6 +46,7 @@ type DraftSet = {
   exerciseId: string;
   weightKg: number;
   reps: number;
+  feeling?: string;
 };
 
 function getTabForExercise(exercise: Exercise): BodyPartTabId {
@@ -93,6 +100,11 @@ function playBeep(): void {
   }
 }
 
+function getFeelingEmoji(feeling: string | undefined): string {
+  if (!feeling) return "";
+  return FEELING_OPTIONS.find((f) => f.value === feeling)?.emoji ?? "";
+}
+
 // =========================================================================
 
 export default function TodayPage() {
@@ -106,6 +118,7 @@ export default function TodayPage() {
   // ---- 入力値 -------------------------------------------------------------
   const [currentWeight, setCurrentWeight] = useState<number>(60);
   const [currentReps,   setCurrentReps]   = useState<number>(10);
+  const [currentFeeling, setCurrentFeeling] = useState<string | undefined>(undefined);
 
   // ---- 前回値・クイックモード ---------------------------------------------
   type Suggestion = { exerciseId: string; weightKg: number; reps: number };
@@ -181,6 +194,7 @@ export default function TodayPage() {
             exerciseId: s.exerciseId,
             weightKg: s.weightKg,
             reps: s.reps,
+            feeling: s.feeling,
           })),
         );
       })
@@ -272,8 +286,14 @@ export default function TodayPage() {
 
   const effectiveStep = stepOverrides[selectedExerciseId] ?? weightStep;
 
+  /**
+   * Weight chips for WeightInput:
+   * - "前回" and "ベスト" chips when there's history
+   * - First-time preset chips when there's no history at all
+   */
   const weightChips = useMemo<WeightChip[]>(() => {
     const chips: WeightChip[] = [];
+
     if (lastSuggestion?.exerciseId === selectedExerciseId) {
       const { weightKg, reps } = lastSuggestion;
       chips.push({
@@ -287,8 +307,23 @@ export default function TodayPage() {
     if (best != null && best !== lastSuggestion?.weightKg) {
       chips.push({ id: "best", label: `ベスト ${best}kg`, weightKg: best });
     }
+
+    // 初回種目：よく使う重量プリセットを提案
+    if (lastSuggestion === null && chips.length === 0) {
+      const ex = exercises.find((e) => e.id === selectedExerciseId);
+      if (ex) {
+        const isDumbbell = /dumbbell|\bdb\b/i.test(ex.name);
+        const presets = isDumbbell
+          ? [10, 15, 20, 25, 30, 40]
+          : [20, 40, 60, 80, 100];
+        presets.forEach((w) =>
+          chips.push({ id: `init-${w}`, label: `${w}kg`, weightKg: w }),
+        );
+      }
+    }
+
     return chips;
-  }, [lastSuggestion, bestWeights, selectedExerciseId]);
+  }, [lastSuggestion, bestWeights, selectedExerciseId, exercises]);
 
   /** 今日のセットを種目ごとにグルーピング */
   const groupedSets = useMemo(() => {
@@ -313,14 +348,14 @@ export default function TodayPage() {
   };
 
   /** セット保存の本体（quick / custom 共通） */
-  const submitSet = async (weightKg: number, reps: number) => {
+  const submitSet = async (weightKg: number, reps: number, feeling?: string) => {
     if (!selectedExerciseId || weightKg <= 0 || reps <= 0) return;
     setIsSaving(true);
     setError(null);
     setInfo(null);
 
     // 1RM 基準で PR 判定
-    const currentOneRm     = estimateOneRepMax(weightKg, reps);
+    const currentOneRm      = estimateOneRepMax(weightKg, reps);
     const previousBestOneRm = bestOneRms[selectedExerciseId];
     const isNewPr = previousBestOneRm === undefined ? true : currentOneRm > previousBestOneRm;
 
@@ -331,11 +366,24 @@ export default function TodayPage() {
         workoutId = w.id;
         setTodayWorkoutId(workoutId);
       }
-      await repo.addSet({ workoutId, exerciseId: selectedExerciseId, weightKg, reps, order: sets.length });
+      await repo.addSet({
+        workoutId,
+        exerciseId: selectedExerciseId,
+        weightKg,
+        reps,
+        order: sets.length,
+        feeling,
+      });
 
-      setSets((prev) => [...prev, { id: createDraftSetId(), exerciseId: selectedExerciseId, weightKg, reps }]);
+      setSets((prev) => [
+        ...prev,
+        { id: createDraftSetId(), exerciseId: selectedExerciseId, weightKg, reps, feeling },
+      ]);
       setBestWeights((prev) => weightKg > (prev[selectedExerciseId] ?? 0) ? { ...prev, [selectedExerciseId]: weightKg } : prev);
       setBestOneRms((prev)  => currentOneRm > (prev[selectedExerciseId] ?? 0) ? { ...prev, [selectedExerciseId]: currentOneRm } : prev);
+
+      // 感触リセット
+      setCurrentFeeling(undefined);
 
       // レストタイマー開始
       beepPlayedRef.current = false;
@@ -344,11 +392,11 @@ export default function TodayPage() {
       if (isNewPr) {
         const ex = exercises.find((e) => e.id === selectedExerciseId);
         setPrCelebration({
-          exerciseName:      ex ? getExerciseNameJa(ex.id, ex.name) : selectedExerciseId,
+          exerciseName:    ex ? getExerciseNameJa(ex.id, ex.name) : selectedExerciseId,
           weightKg,
           reps,
-          newOneRmKg:        currentOneRm,
-          previousOneRmKg:   previousBestOneRm ?? null,
+          newOneRmKg:      currentOneRm,
+          previousOneRmKg: previousBestOneRm ?? null,
         });
       } else {
         setInfo("セットを記録しました。");
@@ -360,9 +408,9 @@ export default function TodayPage() {
     }
   };
 
-  const handleAddSet       = () => submitSet(currentWeight, currentReps);
-  const handleQuickSame    = () => { if (lastSuggestion) submitSet(lastSuggestion.weightKg, lastSuggestion.reps); };
-  const handleQuickPlus    = () => { if (lastSuggestion) submitSet(Math.round((lastSuggestion.weightKg + effectiveStep) * 10) / 10, lastSuggestion.reps); };
+  const handleAddSet    = () => submitSet(currentWeight, currentReps, currentFeeling);
+  const handleQuickSame = () => { if (lastSuggestion) submitSet(lastSuggestion.weightKg, lastSuggestion.reps); };
+  const handleQuickPlus = () => { if (lastSuggestion) submitSet(Math.round((lastSuggestion.weightKg + effectiveStep) * 10) / 10, lastSuggestion.reps); };
 
   const handleDeleteSet = (id: string) => {
     setSets((prev) => prev.filter((s) => s.id !== id));
@@ -474,7 +522,7 @@ export default function TodayPage() {
         ) : (
           <div className="grid grid-cols-2 gap-2">
             {filteredExercises.map((exercise) => {
-              const isSelected    = exercise.id === selectedExerciseId;
+              const isSelected     = exercise.id === selectedExerciseId;
               const todaySetsCount = sets.filter((s) => s.exerciseId === exercise.id).length;
               return (
                 <button
@@ -587,37 +635,52 @@ export default function TodayPage() {
                   <p className="text-[0.6rem] text-zinc-400">※両手合計で記録（ダンベルも合計）</p>
                 </div>
 
-                {/* ③ 回数クイック選択 */}
+                {/* 回数入力（シンプルな数値フィールド） */}
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">回数</label>
-                  <div className="flex gap-1.5">
-                    {REP_OPTIONS.map((r) => (
-                      <button
-                        key={r}
-                        type="button"
-                        onClick={() => setCurrentReps(r)}
-                        className={`flex-1 rounded-xl py-2 text-xs font-semibold transition active:scale-[0.95] ${
-                          currentReps === r
-                            ? "bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900"
-                            : "bg-zinc-200 text-zinc-600 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-300"
-                        }`}
-                      >
-                        {r}
-                      </button>
-                    ))}
-                  </div>
-                  {/* カスタム回数入力 */}
                   <input
                     type="number"
                     inputMode="numeric"
-                    placeholder="その他"
-                    className="h-8 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
-                    value={REP_OPTIONS.includes(currentReps as (typeof REP_OPTIONS)[number]) ? "" : (Number.isNaN(currentReps) ? "" : currentReps)}
+                    placeholder="回数を入力"
+                    min={1}
+                    className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                    value={currentReps > 0 ? currentReps : ""}
                     onChange={(e) => {
                       const v = Number(e.target.value);
-                      if (!Number.isNaN(v) && v > 0) setCurrentReps(v);
+                      if (!Number.isNaN(v) && v >= 0) setCurrentReps(v);
                     }}
                   />
+                </div>
+
+                {/* 感触セレクター */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                    感触 <span className="font-normal text-zinc-400">（任意）</span>
+                  </label>
+                  <div className="flex gap-1.5">
+                    {FEELING_OPTIONS.map((opt) => {
+                      const isSelected = currentFeeling === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() =>
+                            setCurrentFeeling((prev) =>
+                              prev === opt.value ? undefined : opt.value,
+                            )
+                          }
+                          className={`flex flex-1 flex-col items-center gap-0.5 rounded-xl py-1.5 text-[0.6rem] font-medium transition active:scale-[0.95] ${
+                            isSelected
+                              ? "bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900"
+                              : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                          }`}
+                        >
+                          <span className="text-base leading-none">{opt.emoji}</span>
+                          <span>{opt.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* セット追加ボタン */}
@@ -673,6 +736,7 @@ export default function TodayPage() {
                   <ul className="space-y-1 text-xs">
                     {groupSets.map((set, idx) => {
                       const isEditing = set.id === editingSetId;
+                      const feelingEmoji = getFeelingEmoji(set.feeling);
                       return (
                         <li key={set.id} className="flex items-center gap-2 rounded-lg bg-zinc-50 px-2.5 py-1.5 dark:bg-zinc-800/80">
                           <span className="w-5 shrink-0 text-center text-[0.65rem] font-bold text-zinc-400">{idx + 1}</span>
@@ -699,6 +763,11 @@ export default function TodayPage() {
                             ) : (
                               <span className="font-semibold text-zinc-900 dark:text-zinc-50">
                                 {set.weightKg}kg × {set.reps}回
+                                {feelingEmoji && (
+                                  <span className="ml-1.5 text-base leading-none" title={set.feeling}>
+                                    {feelingEmoji}
+                                  </span>
+                                )}
                               </span>
                             )}
                           </div>

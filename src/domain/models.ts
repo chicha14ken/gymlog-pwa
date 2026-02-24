@@ -25,5 +25,9 @@ export type SetEntry = {
    * Order of the set within the workout (0-based).
    */
   order: number;
+  /**
+   * Optional subjective feeling for this set (e.g. "アップ", "良い感じ", "きつい").
+   */
+  feeling?: string;
 };
 
