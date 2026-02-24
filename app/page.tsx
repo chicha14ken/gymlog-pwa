@@ -10,6 +10,10 @@ import {
   type StepOption,
   getDefaultStep,
 } from "@/lib/weightStep";
+import {
+  PrCelebration,
+  type PrCelebrationData,
+} from "@/components/PrCelebration";
 
 type DraftSet = {
   id: string;
@@ -92,6 +96,7 @@ export default function TodayPage() {
   );
   const [bestWeights, setBestWeights] = useState<Record<string, number>>({});
   const [stepOverrides, setStepOverrides] = useState<Record<string, StepOption>>({});
+  const [prCelebration, setPrCelebration] = useState<PrCelebrationData | null>(null);
 
   useEffect(() => {
     repo
@@ -217,6 +222,13 @@ export default function TodayPage() {
     setIsSaving(true);
     setError(null);
     setInfo(null);
+
+    // PR判定：保存前に現在のベストを確認
+    const previousBest = bestWeights[selectedExerciseId]; // undefined = 初記録
+    const isNewPr = previousBest === undefined
+      ? true
+      : currentWeight > previousBest;
+
     try {
       let workoutId = todayWorkoutId;
       if (!workoutId) {
@@ -244,7 +256,21 @@ export default function TodayPage() {
           ? { ...prev, [selectedExerciseId]: currentWeight }
           : prev;
       });
-      setInfo("セットを記録しました。");
+
+      if (isNewPr) {
+        // 🏆 PR達成 → お祝い演出
+        const exercise = exercises.find((e) => e.id === selectedExerciseId);
+        const exerciseName = exercise
+          ? getExerciseNameJa(exercise.id, exercise.name)
+          : selectedExerciseId;
+        setPrCelebration({
+          exerciseName,
+          newWeightKg: currentWeight,
+          previousWeightKg: previousBest !== undefined ? previousBest : null,
+        });
+      } else {
+        setInfo("セットを記録しました。");
+      }
     } catch {
       setError("セットの保存に失敗しました。");
     } finally {
@@ -310,6 +336,13 @@ export default function TodayPage() {
 
   return (
     <div className="space-y-4">
+      {/* PR達成時のお祝いオーバーレイ */}
+      {prCelebration && (
+        <PrCelebration
+          {...prCelebration}
+          onDismiss={() => setPrCelebration(null)}
+        />
+      )}
       <section className="space-y-2 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-zinc-100 dark:bg-zinc-900 dark:ring-zinc-800">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
