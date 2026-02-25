@@ -1,30 +1,32 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* ── Warm Minimal Palette ── */
+  --color-ivory:       #FAFAF8;   /* base background */
+  --color-card:        #FFFFFF;   /* card background */
+  --color-rim:         #EEECE7;   /* border / divider */
+  --color-charcoal:    #1C1917;   /* primary text */
+  --color-stone:       #A39E95;   /* secondary text */
+  --color-pale:        #C8C3BA;   /* muted / placeholder */
+  --color-terracotta:  #C4705A;   /* accent CTA */
+  --color-terra-light: #F5EBE7;   /* accent bg */
+  --color-sage:        #6B8F71;   /* success */
+  --color-sage-light:  #EDF3EE;   /* success bg */
+  --color-infoBlue:    #7B8FA1;   /* info badge */
+  --color-linen:       #F0EBE4;   /* warm highlight bg */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* ── Typography ── */
+  --font-sans: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #FAFAF8;
+  color: #1C1917;
+  font-family: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* スクロールバー非表示ユーティリティ */
+/* スクロールバー非表示 */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
