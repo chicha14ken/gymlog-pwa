@@ -87,7 +87,7 @@ export function RestTimer({
                 : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
             }`}
           >
-            {d >= 60 ? `${d / 60}分` : `${d}s`}
+            {d >= 60 ? `${d / 60}分` : `${d}秒`}
           </button>
         ))}
       </div>

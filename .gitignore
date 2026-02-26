@@ -17,3 +17,9 @@ pnpm-debug.log*
 
 # mac
 .DS_Store
+
+# typescript
+tsconfig.tsbuildinfo
+
+# claude code (worktrees)
+.claude/
