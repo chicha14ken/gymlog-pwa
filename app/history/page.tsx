@@ -125,9 +125,9 @@ export default function HistoryPage() {
           sets: sets.sort((a, b) => a.order - b.order),
         }));
 
-      const lastDateKey = dateGroups[0]?.dateKey ?? "";
-      const lastDateLabel = dateGroups[0] ? formatDateShort(dateGroups[0].dateKey) : "";
-      const totalSets = dateGroups.reduce((s, d) => s + d.sets.length, 0);
+      const lastDateKey   = dateGroups[0]?.dateKey ?? "";
+      const lastDateLabel = lastDateKey ? formatDateShort(lastDateKey) : "";
+      const totalSets     = dateGroups.reduce((s, d) => s + d.sets.length, 0);
 
       result.push({
         exerciseId,
