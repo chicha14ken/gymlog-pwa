@@ -1,19 +1,19 @@
 import type { Exercise, Workout, SetEntry } from "../domain/models";
 
-export const DB_NAME = "gymlog-db";
+export const DB_NAME = "ageta-db";
 export const DB_VERSION = 4;
 
 const STORE_EXERCISES = "exercises";
 const STORE_WORKOUTS = "workouts";
 const STORE_SETS = "sets";
 
-type GymLogDb = {
+type AgetaDb = {
   [STORE_EXERCISES]: Exercise;
   [STORE_WORKOUTS]: Workout;
   [STORE_SETS]: SetEntry;
 };
 
-export type StoreName = keyof GymLogDb;
+export type StoreName = keyof AgetaDb;
 
 function getIndexedDb(): IDBFactory {
   if (typeof window === "undefined") {

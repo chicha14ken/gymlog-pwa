@@ -3,14 +3,19 @@ import "./globals.css";
 import { BottomNav } from "@/components/BottomNav";
 
 export const metadata: Metadata = {
-  title: "gymlog",
-  description: "Minimal. Warm. Refined. — オフライン対応の筋トレ記録アプリ。",
-  applicationName: "gymlog",
+  title: "あげた | Ageta",
+  description: "筋トレの「上げた」を記録して祝おう",
+  applicationName: "Ageta",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "gymlog",
+    title: "あげた | Ageta",
+  },
+  openGraph: {
+    title: "あげた | Ageta",
+    siteName: "Ageta",
+    description: "筋トレの「上げた」を記録して祝おう",
   },
 };
 

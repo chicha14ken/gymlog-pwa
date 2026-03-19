@@ -1,12 +1,12 @@
 {
-  "name": "筋トレログ",
-  "short_name": "筋トレログ",
+  "name": "あげた",
+  "short_name": "あげた",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0b1120",
   "theme_color": "#0b1120",
-  "description": "シンプルで使いやすい、オフライン対応の筋トレ記録アプリ。",
+  "description": "筋トレの「上げた」を記録して祝おう",
   "icons": [
     {
       "src": "/icon-192.svg",
@@ -20,4 +20,3 @@
     }
   ]
 }
-

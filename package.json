@@ -1,7 +1,8 @@
 {
-  "name": "gymlog-pwa",
+  "name": "ageta",
   "version": "0.1.0",
   "private": true,
+  "description": "あげた — 筋トレの「上げた」を記録・祝うPWA",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

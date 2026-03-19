@@ -14,11 +14,11 @@ No test suite is configured.
 
 ## Architecture
 
-**筋トレログ** is a Japanese-language offline-first PWA for logging gym workouts. Built with Next.js App Router, React 19, TypeScript, and Tailwind CSS v4. All data lives in the browser via IndexedDB — there is no backend.
+**あげた (Ageta)** is a Japanese-language offline-first PWA for logging gym workouts. Built with Next.js App Router, React 19, TypeScript, and Tailwind CSS v4. All data lives in the browser via IndexedDB — there is no backend.
 
 ### Data layer (`src/data/`)
 
-- **`db.ts`** — Raw IndexedDB access. Opens/upgrades the `gymlog-db` database (version 2) and seeds ~27 exercises on first install. Exports `withStore()`, a helper that wraps any IDB operation in a transaction.
+- **`db.ts`** — Raw IndexedDB access. Opens/upgrades the `ageta-db` database (version 4) and seeds ~56 exercises on first install. Exports `withStore()`, a helper that wraps any IDB operation in a transaction.
 - **`repository.ts`** — `WorkoutRepository` interface defining the data contract.
 - **`localRepository.ts`** — `LocalWorkoutRepository` implements the interface using `withStore()`. All methods assert `typeof window !== "undefined"` since IDB is browser-only.
 
