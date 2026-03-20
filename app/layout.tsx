@@ -3,24 +3,43 @@ import "./globals.css";
 import { BottomNav } from "@/components/BottomNav";
 
 export const metadata: Metadata = {
-  title: "あげた | Ageta",
-  description: "筋トレの「上げた」を記録して祝おう",
-  applicationName: "Ageta",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "あげた | Ageta",
+  title: {
+    default: 'Ageta — あげた',
+    template: '%s | Ageta',
   },
+  description: 'PRが更新されたとき、アプリが最初に気づく。ジムログPWA。',
+  applicationName: 'Ageta',
+  keywords: ['ジム', 'トレーニング', '筋トレ', 'ログ', 'PR', 'ワークアウト'],
+  authors: [{ name: 'Yatta Moment' }],
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: '32x32' },
+    ],
+    apple: [{ url: '/icon-192.png', sizes: '192x192' }],
+    shortcut: '/favicon.svg',
+  },
+  manifest: '/manifest.json',
   openGraph: {
-    title: "あげた | Ageta",
-    siteName: "Ageta",
-    description: "筋トレの「上げた」を記録して祝おう",
+    title: 'Ageta — あげた',
+    description: 'PRが更新されたとき、アプリが最初に気づく。',
+    url: 'https://ageta-pwa.vercel.app',
+    siteName: 'Ageta',
+    images: [{ url: 'https://ageta-pwa.vercel.app/ogp.png', width: 1200, height: 630, alt: 'Ageta — ジムログPWA' }],
+    locale: 'ja_JP',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Ageta — あげた',
+    description: 'PRが更新されたとき、アプリが最初に気づく。',
+    images: ['https://ageta-pwa.vercel.app/ogp.png'],
+    site: '@ageta_app',
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FAFAF8",
+  themeColor: '#111318',
 };
 
 export default function RootLayout({

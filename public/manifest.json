@@ -1,22 +1,15 @@
 {
-  "name": "あげた",
-  "short_name": "あげた",
+  "name": "Ageta — あげた",
+  "short_name": "Ageta",
+  "description": "PRが更新されたとき、アプリが最初に気づく。",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#0b1120",
-  "theme_color": "#0b1120",
-  "description": "筋トレの「上げた」を記録して祝おう",
+  "background_color": "#111318",
+  "theme_color": "#111318",
+  "orientation": "portrait",
   "icons": [
-    {
-      "src": "/icon-192.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "/icon-512.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml"
-    }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
   ]
 }
