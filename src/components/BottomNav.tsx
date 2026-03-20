@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dumbbell, Clock, Trophy } from "lucide-react";
+import { Dumbbell, Clock, Trophy, CalendarDays } from "lucide-react";
 
 const items = [
   {
@@ -16,6 +16,12 @@ const items = [
     label: "履歴",
     Icon: Clock,
     isActive: (p: string) => p.startsWith("/history"),
+  },
+  {
+    href: "/plan",
+    label: "プラン",
+    Icon: CalendarDays,
+    isActive: (p: string) => p.startsWith("/plan"),
   },
   {
     href: "/pr",
